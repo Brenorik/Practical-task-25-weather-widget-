@@ -77,24 +77,11 @@ class WeatherWidget {
 
   createWidgetContainer() {
     this.container = document.createElement('div');
-    this.container.style.position = 'fixed';
-    this.container.style.bottom = '10px';
-    this.container.style.right = '10px';
-    this.container.style.padding = '25px';
-    this.container.style.backgroundColor = 'white';
-    this.container.style.border = '1px solid #ccc';
-    this.container.style.borderRadius = '5px';
-    this.container.style.boxShadow = '0px 20px 50px rgba(0, 0, 0, 0.2)';
+    this.container.classList.add('weather-widget');
 
     const closeButton = document.createElement('button');
     closeButton.innerHTML = '×';
-    closeButton.style.position = 'absolute';
-    closeButton.style.top = '2px';
-    closeButton.style.right = '2px';
-    closeButton.style.backgroundColor = 'transparent';
-    closeButton.style.border = 'none';
-    closeButton.style.fontSize = '20px';
-    closeButton.style.cursor = 'pointer';
+    closeButton.classList.add('weatherWCloseButton');
     closeButton.onclick = () => {
       this.container.style.display = 'none';
     };
@@ -117,12 +104,13 @@ class WeatherWidget {
     this.container.appendChild(weatherDescription);
     this.container.appendChild(windSpeed);
 
+    this.renderWeatherButton();
+  }
+
+  renderWeatherButton() {
     this.forecastButton = document.createElement('button');
     this.forecastButton.innerHTML = 'Прогноз на 3 дня';
-    this.forecastButton.style.display = 'block';
-    this.forecastButton.style.marginTop = '10px';
-    this.forecastButton.style.padding = '5px 10px';
-    this.forecastButton.style.cursor = 'pointer';
+    this.forecastButton.classList.add('weatherWidgetForecastButton');
     this.forecastButton.onclick = () => {
       this.getForecast();
     };
