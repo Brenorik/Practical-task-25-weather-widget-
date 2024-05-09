@@ -63,7 +63,7 @@ class WeatherWidget {
 
   renderForecast(forecast) {
     const forecastContainer = document.createElement('div');
-    forecastContainer.innerHTML = '<b>Прогноз на 4 дня:</b>';
+    forecastContainer.innerHTML = '<b>Прогноз на 3 дня:</b>';
 
     forecast.forEach((entry) => {
       const date = new Date(entry.dt * 1000);
@@ -114,7 +114,7 @@ class WeatherWidget {
 
   renderWeatherButton() {
     this.forecastButton = document.createElement('button');
-    this.forecastButton.innerHTML = 'Прогноз на 4 дня';
+    this.forecastButton.innerHTML = 'Прогноз на 3 дня';
     this.forecastButton.classList.add('weatherWidgetForecastButton');
     this.forecastButton.onclick = () => {
       this.getForecast();
