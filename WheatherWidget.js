@@ -136,5 +136,3 @@ class WeatherWidget {
     }
   }
 }
-
-new WeatherWidget().getWeather();
