@@ -64,8 +64,10 @@ class WeatherWidget {
 
     forecast.forEach((entry) => {
       const date = new Date(entry.dt * 1000);
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const formattedDate = date.toLocaleDateString('ru-RU', options);
       const forecastEntry = document.createElement('div');
-      forecastEntry.innerHTML = `${date.toLocaleDateString()} ${Math.round(entry.main.temp)} °C (${
+      forecastEntry.textContent = `${formattedDate} ${Math.round(entry.main.temp)} °C (${
         entry.weather[0].description
       })`;
       forecastContainer.appendChild(forecastEntry);
