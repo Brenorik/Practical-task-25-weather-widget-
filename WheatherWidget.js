@@ -39,17 +39,20 @@ class WeatherWidget {
       }
       const data = await response.json();
 
+      // Получение текущего часа
+      const currentHour = new Date().getHours();
+
+      // Использование forecast внутри блока try
       const forecast = data.list.filter((entry) => {
         const date = new Date(entry.dt * 1000);
         return (
-          date.getHours() === 12 &&
+          date.getHours() === currentHour &&
           (date.getDate() === new Date().getDate() ||
             date.getDate() === new Date().getDate() + 1 ||
             date.getDate() === new Date().getDate() + 2 ||
             date.getDate() === new Date().getDate() + 3)
         );
       });
-
       this.renderForecast(forecast);
     } catch (error) {
       console.error('Ошибка запроса:', error);
@@ -60,7 +63,7 @@ class WeatherWidget {
 
   renderForecast(forecast) {
     const forecastContainer = document.createElement('div');
-    forecastContainer.innerHTML = '<b>Прогноз на 3 дня:</b>';
+    forecastContainer.innerHTML = '<b>Прогноз на 4 дня:</b>';
 
     forecast.forEach((entry) => {
       const date = new Date(entry.dt * 1000);
@@ -111,7 +114,7 @@ class WeatherWidget {
 
   renderWeatherButton() {
     this.forecastButton = document.createElement('button');
-    this.forecastButton.innerHTML = 'Прогноз на 3 дня';
+    this.forecastButton.innerHTML = 'Прогноз на 4 дня';
     this.forecastButton.classList.add('weatherWidgetForecastButton');
     this.forecastButton.onclick = () => {
       this.getForecast();
