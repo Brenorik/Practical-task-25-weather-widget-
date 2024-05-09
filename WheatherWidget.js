@@ -39,10 +39,8 @@ class WeatherWidget {
       }
       const data = await response.json();
 
-      // Получение текущего часа
       const currentHour = new Date().getHours();
 
-      // Использование forecast внутри блока try
       const forecast = data.list.filter((entry) => {
         const date = new Date(entry.dt * 1000);
         return (
