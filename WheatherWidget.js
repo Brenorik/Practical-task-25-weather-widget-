@@ -39,6 +39,7 @@ class WeatherWidget {
       }
       const data = await response.json();
 
+      // Получение текущего часа
       const currentHour = new Date().getHours();
 
       const forecast = data.list.filter((entry) => {
