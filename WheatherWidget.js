@@ -2,139 +2,138 @@ class WeatherWidget {
   constructor() {
     this.apiKey = '0c3a89ac499a38a106b92d299c043c1d';
     this.apiUrl = 'https://api.openweathermap.org/data/2.5/';
-    this.defaultLocation = 'Минск';
-    this.unit = 'metric';
-    this.language = 'ru';
-    this.container = null;
-    this.loader = null;
-    this.active = false;
-
-    this.createWidgetContainer();
+    this.city = 'Minsk';
+    this.units = 'metric';
+    this.lang = 'ru';
+    this.forecastPopup = null;
   }
 
   async getWeather() {
     try {
+      const loader = this.showLoader();
       const response = await fetch(
-        `${this.apiUrl}weather?q=${this.defaultLocation}&units=${this.unit}&lang=${this.language}&appid=${this.apiKey}`
+        `${this.apiUrl}weather?q=${this.city}&units=${this.units}&lang=${this.lang}&appid=${this.apiKey}`
       );
-      if (!response.ok) {
-        throw new Error('Не удалось получить данные о погоде');
-      }
       const data = await response.json();
+      loader.remove();
       this.renderWeather(data);
     } catch (error) {
-      console.error('Ошибка запроса:', error);
+      console.error('Error fetching weather data:', error);
     }
+  }
+
+  renderWeather(data) {
+    const weatherContainer = document.createElement('div');
+    weatherContainer.classList.add('weather-widget-container');
+
+    const weatherPopup = document.createElement('div');
+    weatherPopup.classList.add('weather-popup');
+
+    const closeButton = document.createElement('button');
+    closeButton.innerHTML = '✖';
+    closeButton.classList.add('close-button');
+    closeButton.addEventListener('click', () => {
+      weatherContainer.remove();
+    });
+    weatherPopup.appendChild(closeButton);
+
+    const weatherInfo = document.createElement('div');
+    weatherInfo.classList.add('weather-info');
+    weatherInfo.innerHTML = `Сейчас в ${this.city}: ${data.main.temp} °C (${data.weather[0].description}). Ветер: ${data.wind.speed} м/c`;
+    weatherPopup.appendChild(weatherInfo);
+
+    const forecastButton = document.createElement('button');
+    forecastButton.innerHTML = 'Прогноз на 3 дня';
+    forecastButton.addEventListener('click', async () => {
+      forecastButton.remove();
+
+      const loader = this.showLoader();
+      const forecastData = await this.getForecast();
+      loader.remove();
+      const forecastText = document.createElement('div');
+      forecastText.innerHTML = '<strong>Прогноз на 3 дня:</strong>';
+      weatherContainer.appendChild(forecastText);
+      this.renderForecast(forecastData);
+    });
+    weatherPopup.appendChild(forecastButton);
+
+    weatherContainer.appendChild(weatherPopup);
+    document.body.appendChild(weatherContainer);
   }
 
   async getForecast() {
     try {
-      this.showLoader();
-
       const response = await fetch(
-        `${this.apiUrl}forecast?q=${this.defaultLocation}&units=${this.unit}&lang=${this.language}&appid=${this.apiKey}`
+        `${this.apiUrl}forecast?q=${this.city}&units=${this.units}&lang=${this.lang}&appid=${this.apiKey}`
       );
-      if (!response.ok) {
-        throw new Error('Не удалось получить данные прогноза');
-      }
       const data = await response.json();
-
-      // Получение текущего часа
-      const currentHour = new Date().getHours();
-
-      const forecast = data.list.filter((entry) => {
-        const date = new Date(entry.dt * 1000);
-        return (
-          date.getHours() === currentHour &&
-          (date.getDate() === new Date().getDate() ||
-            date.getDate() === new Date().getDate() + 1 ||
-            date.getDate() === new Date().getDate() + 2 ||
-            date.getDate() === new Date().getDate() + 3)
-        );
-      });
-      this.renderForecast(forecast);
+      const filteredForecast = this.filterForecast(data);
+      return filteredForecast;
     } catch (error) {
-      console.error('Ошибка запроса:', error);
-    } finally {
-      this.hideLoader();
+      console.error('Error fetching forecast data:', error);
     }
-  }
-
-  renderForecast(forecast) {
-    const forecastContainer = document.createElement('div');
-    forecastContainer.innerHTML = '<b>Прогноз на 3 дня:</b>';
-
-    forecast.forEach((entry) => {
-      const date = new Date(entry.dt * 1000);
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      const formattedDate = date.toLocaleDateString('ru-RU', options);
-      const forecastEntry = document.createElement('div');
-      forecastEntry.textContent = `${formattedDate} ${Math.round(entry.main.temp)} °C (${
-        entry.weather[0].description
-      })`;
-      forecastContainer.appendChild(forecastEntry);
-    });
-
-    this.container.appendChild(forecastContainer);
-    this.forecastButton.style.display = 'none';
-  }
-
-  createWidgetContainer() {
-    this.container = document.createElement('div');
-    this.container.classList.add('weather-widget');
-
-    const closeButton = document.createElement('button');
-    closeButton.innerHTML = '×';
-    closeButton.classList.add('weatherWCloseButton');
-    closeButton.onclick = () => {
-      this.container.style.display = 'none';
-    };
-    this.container.appendChild(closeButton);
-
-    document.body.appendChild(this.container);
-  }
-
-  renderWeather(data) {
-    const temperature = document.createElement('div');
-    temperature.innerHTML = `Сейчас в Минске ${Math.round(data.main.temp)} °C`;
-
-    const weatherDescription = document.createElement('div');
-    weatherDescription.innerHTML = `${data.weather[0].description}`;
-
-    const windSpeed = document.createElement('div');
-    windSpeed.innerHTML = `Ветер: ${data.wind.speed} м/с`;
-
-    this.container.appendChild(temperature);
-    this.container.appendChild(weatherDescription);
-    this.container.appendChild(windSpeed);
-
-    this.renderWeatherButton();
-  }
-
-  renderWeatherButton() {
-    this.forecastButton = document.createElement('button');
-    this.forecastButton.innerHTML = 'Прогноз на 3 дня';
-    this.forecastButton.classList.add('weatherWidgetForecastButton');
-    this.forecastButton.onclick = () => {
-      this.getForecast();
-    };
-    this.container.appendChild(this.forecastButton);
   }
 
   showLoader() {
-    this.loader = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    this.loader.setAttribute('width', '50');
-    this.loader.setAttribute('height', '50');
-    this.loader.setAttribute('viewBox', '0 0 50 50');
-    this.loader.innerHTML = `<circle cx="25" cy="25" r="20" fill="none" stroke-width="4" stroke="#ccc" stroke-dasharray="31.42 31.42" transform="rotate(0 25 25)">
-        <animateTransform attributeName="transform" begin="0s" dur="1.5s" type="rotate" from="0 25 25" to="360 25 25" repeatCount="indefinite" />
-      </circle>`;
-    this.container.appendChild(this.loader);
+    const loader = document.createElement('div');
+    loader.classList.add('loader');
+    document.body.appendChild(loader);
+    return loader;
   }
 
-  hideLoader() {
-    if (this.loader) {
-      this.loader.style.display = 'none';
+  filterForecast(data) {
+    const today = new Date().getDate();
+    const filteredForecast = data.list.filter((item) => {
+      const itemDate = new Date(item.dt * 1000).getDate();
+      return itemDate === today + 1 || itemDate === today + 2 || itemDate === today + 3;
+    });
+    return filteredForecast;
+  }
+
+  renderForecast(forecast) {
+    if (!this.forecastPopup) {
+      this.forecastPopup = document.createElement('div');
+      this.forecastPopup.classList.add('forecast-popup');
+    } else {
+      this.forecastPopup.innerHTML = '';
     }
+
+    const forecastByDay = this.groupForecastByDay(forecast);
+    for (const [day, forecasts] of Object.entries(forecastByDay)) {
+      forecasts.forEach((item) => {
+        const forecastItem = document.createElement('div');
+        forecastItem.classList.add('forecast-item');
+        const dateTime = new Date(item.dt * 1000);
+        const formattedDate = dateTime.toLocaleDateString(this.lang, {
+          day: 'numeric',
+          month: 'numeric',
+          year: 'numeric',
+        });
+        forecastItem.innerHTML = `${formattedDate} ${this.city}: ${item.main.temp} °C (${item.weather[0].description})`;
+        this.forecastPopup.appendChild(forecastItem);
+      });
+    }
+
+    document.querySelector('.weather-widget-container').appendChild(this.forecastPopup);
+  }
+
+  groupForecastByDay(forecast) {
+    const forecastByDay = {};
+    forecast.forEach((item) => {
+      const date = new Date(item.dt * 1000);
+      const dayOfWeek = date.toLocaleDateString(this.lang, { weekday: 'long' });
+      const hourOfDay = date.getHours();
+      if (hourOfDay === 12) {
+        if (!forecastByDay[dayOfWeek]) {
+          forecastByDay[dayOfWeek] = [];
+        }
+        forecastByDay[dayOfWeek].push(item);
+      }
+    });
+    return forecastByDay;
   }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  new WeatherWidget().getWeather();
+});
